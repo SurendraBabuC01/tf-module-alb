@@ -5,8 +5,8 @@ resource "aws_security_group" "main" {
 
   ingress {
     description = "ALB"
-    from_port   = var.port_no
-    to_port     = var.port_no
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = var.allow_alb_cidr
   }
@@ -31,5 +31,21 @@ resource "aws_lb" "main" {
   subnets            = var.subnet_ids
 
   tags = merge(var.tags, { Name = "${var.name}-${var.env}-alb" })
+}
+
+resource "aws_lb_listener" "main" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Unauthorised"
+      status_code  = "403"
+    }
+  }
 }
 
